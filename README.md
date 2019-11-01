@@ -8,4 +8,4 @@ your system. This script, thanks to 4sysops, is intended to turn all of that off
 you find something missing or a problem or whatever, don't hesitate to say something.
 However, if you just want to defend MS, please find a more fitting forum.
 
-This script is passed along without warranty or guarantee; use at our own risk.
+This script is passed along without warranty or guarantee; use at your own risk.
