@@ -1,6 +1,7 @@
 #  https://4sysops.com/archives/disable-windows-10-telemetry-with-a-powershell-script/
 # Modifications after 4sysops.com 
 # 11/1/2019 cleanup output and some additions
+# 11/3/2019 updated task not found logic
 Function ChangeReg {
   param ([string] $RegKey,
          [string] $Value,
@@ -68,11 +69,16 @@ Function ChangeReg {
  $ErrorActionPreference = 'Stop'
  $tasks | %{
     try{
+	   if (Get-ScheduledTask -TaskName $_ -ErrorAction Ignore){
        # This is get followed by disable to work-around a problem of disable task with embedded blanks in the name
        Get-ScheduledTask -TaskName $_ | Disable-ScheduledTask | Out-Null
-       Write-Host "Task $_ disabled." -BackgroundColor Green
+       Write-Host "Task $_ disabled." -ForegroundColor Green
+	   }
+	   else {
+	   Write-Host "Task $_ does not exist." -ForegroundColor yellow
+	   }
        } catch { 
          # [Microsoft.PowerShell.Cmdletization.Cim.CimJobException]
-         Write-Host "Task $($_.TargetObject) is not found" -BackgroundColor Yellow
+         Write-Host "Task $($_.TargetObject) is not found" -ForegroundColor Yellow
        }
  }
