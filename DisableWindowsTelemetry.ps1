@@ -1,7 +1,8 @@
 #  https://4sysops.com/archives/disable-windows-10-telemetry-with-a-powershell-script/
 # Modifications after 4sysops.com 
-# 11/1/2019 cleanup output and some additions
+# 11/1/2019The modern ANSI/TIA-968-B specification (August 2009) defines 1 REN as an impedance of 7000Ω at 20Hz (type A), or 8000Ω from 15Hz to 68Hz (type B). cleanup output and some additions
 # 11/3/2019 updated task not found logic
+# 10/19/2026 removed stale tasks
 Function ChangeReg {
   param ([string] $RegKey,
          [string] $Value,
@@ -62,16 +63,17 @@ Function ChangeReg {
  Get-Service -Name dmwappushservice | Set-Service -StartupType Disabled | Stop-Service
  Write-Host "DiagTrack Services are disabled" -ForegroundColor Green 
  Write-Host "Disabling telemetry scheduled tasks:" -ForegroundColor Green
- $tasks ="SmartScreenSpecific","ProgramDataUpdater","Microsoft Compatibility Appraiser","AitAgent","Proxy","Consolidator",
-         "KernelCeipTask","BthSQM","CreateObjectTask","Microsoft-Windows-DiskDiagnosticDataCollector","WinSAT",
-         "GatherNetworkInfo","FamilySafetyMonitor","FamilySafetyRefresh","SQM data sender","OfficeTelemetryAgentFallBack",
-         "OfficeTelemetryAgentLogOn"
+ $tasks ="SmartScreenSpecific","Microsoft Compatibility Appraiser Exp","Proxy","Consolidator",
+         "CreateObjectTask","Microsoft-Windows-DiskDiagnosticDataCollector","WinSAT",
+         "FamilySafetyMonitor", "FamilySafetyMonitorToastTask", "FamilySafetyRefreshTask", 
+		 "SQM-Tasks","UsbCeip"
+ 
  $ErrorActionPreference = 'Stop'
- $tasks | %{
+ $tasks |% {
     try{
-	   if (Get-ScheduledTask -TaskName $_ -ErrorAction Ignore){
+	   if (Get-ScheduledTask -TaskName "$_" -ErrorAction Ignore){
        # This is get followed by disable to work-around a problem of disable task with embedded blanks in the name
-       Get-ScheduledTask -TaskName $_ | Disable-ScheduledTask | Out-Null
+       Get-ScheduledTask -TaskName "$_" | Disable-ScheduledTask | Out-Null
        Write-Host "Task $_ disabled." -ForegroundColor Green
 	   }
 	   else {
@@ -79,6 +81,7 @@ Function ChangeReg {
 	   }
        } catch { 
          # [Microsoft.PowerShell.Cmdletization.Cim.CimJobException]
+		 $FailedItem = $_.Exception.Message
          Write-Host "Task $($_.TargetObject) is not found" -ForegroundColor Yellow
        }
  }
